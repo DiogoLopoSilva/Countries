@@ -69,6 +69,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Modelos\Currency.cs" />
+    <Compile Include="Modelos\Language.cs" />
+    <Compile Include="Modelos\Pais.cs" />
+    <Compile Include="Modelos\RegionalBloc.cs" />
+    <Compile Include="Modelos\Response.cs" />
+    <Compile Include="Modelos\Translations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
