@@ -7,6 +7,23 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="19*"/>
+            <ColumnDefinition Width="14*"/>
+        </Grid.ColumnDefinitions>
+        <ListBox x:Name ="listBoxPaises" SelectionChanged="listBoxPaises_SelectionChanged" Margin="0,38,71.291,10">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="{Binding caminhoImage}" Width="20" Height="20"/>
+                        <TextBlock Text="{Binding name}" VerticalAlignment="Center" Margin="10"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <Image x:Name="imagebox1" HorizontalAlignment="Left" Height="100" Margin="78.709,46,0,0" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.5,0.55" Grid.Column="1"/>
+        <TextBlock x:Name="tb1" HorizontalAlignment="Left" Margin="104.709,151,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="                " TextAlignment="Center" Grid.Column="1"/>
+        <TextBox x:Name="searchbox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="searchbox_TextChanged"/>
+
     </Grid>
 </Window>
