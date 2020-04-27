@@ -3,27 +3,92 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Countries"
+        xmlns:self="clr-namespace:Countries.Modelos"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="19*"/>
-            <ColumnDefinition Width="14*"/>
-        </Grid.ColumnDefinitions>
-        <ListBox x:Name ="listBoxPaises" SelectionChanged="listBoxPaises_SelectionChanged" Margin="0,38,71.291,10">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{Binding caminhoImage}" Width="20" Height="20"/>
-                        <TextBlock Text="{Binding name}" VerticalAlignment="Center" Margin="10"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <Image x:Name="imagebox1" HorizontalAlignment="Left" Height="100" Margin="78.709,46,0,0" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.5,0.55" Grid.Column="1"/>
-        <TextBlock x:Name="tb1" HorizontalAlignment="Left" Margin="104.709,151,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Text="                " TextAlignment="Center" Grid.Column="1"/>
-        <TextBox x:Name="searchbox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" TextChanged="searchbox_TextChanged"/>
+        Title="MainWindow" Height="600" Width="800" WindowStartupLocation="CenterScreen">
+    <Border Padding="10">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.9*" MaxWidth="360"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="1">
 
-    </Grid>
+                <Image x:Name="imageFlag" DataContext="listBoxPaises" Source="{Binding Path=SelectedItem.caminhoImage}" Height="136" Width="169" VerticalAlignment="Top" Margin="0,20,0,0"/>
+                <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" DataContext="listBoxPaises" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
+                
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,70">
+
+                        <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+
+                        <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+
+                        <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+
+                        <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+            <DockPanel VerticalAlignment="Stretch" Grid.Column="0" LastChildFill="True">
+                <Grid DockPanel.Dock="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="searchbox" DataContext="listBoxPaises" HorizontalAlignment="Left" Height="23" Margin="0,0,0,10" TextWrapping="Wrap" Width="120" TextChanged="searchbox_TextChanged" Grid.Column="0"/>
+                    <Button x:Name="btnList" Content="&lt;" HorizontalAlignment="Left" Margin="0,0,0,10"   Width="36" Click="Button_Click" Grid.Column="1"/>
+                </Grid>
+
+                <TabControl x:Name="tabContryContinent" SelectionChanged="TabControl_SelectionChanged">
+
+                    <TabItem Header="Countries">
+                        <Grid Background="#FFE5E5E5">
+                            <ListBox x:Name ="listBoxPaises" SelectionChanged="listBoxPaises_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <!--<TextBlock Text="{Binding name,StringFormat=Nome: {0}}" VerticalAlignment="Center" Margin="10"/>-->
+                                            <Image Source="{Binding caminhoThumbnail}" Width="20" Height="20"/>
+                                            <TextBlock Text="{Binding name}" VerticalAlignment="Center" Margin="10" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Continents">
+                        <Grid Background="#FFE5E5E5">
+                            <TreeView x:Name="treeContinents" SelectedItemChanged="treeContinents_SelectedItemChanged">
+                                <TreeView.Resources>
+                                    <HierarchicalDataTemplate DataType="{x:Type self:Continent}" ItemsSource="{Binding CountriesList}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Text=" [" Foreground="Blue" />
+                                            <TextBlock Text="{Binding CountriesList.Count}" Foreground="Blue" />
+                                            <TextBlock Text="]" Foreground="Blue" />
+                                        </StackPanel>
+                                    </HierarchicalDataTemplate>
+                                    <DataTemplate DataType="{x:Type self:Country}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="{Binding caminhoThumbnail}" Width="20" Height="20" Margin="0,0,5,0"/>
+                                            <TextBlock Text="{Binding name}" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding capital,StringFormat=({0})}" Foreground="Green" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </TreeView.Resources>
+
+                            </TreeView>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+        </Grid>
+    </Border>
 </Window>

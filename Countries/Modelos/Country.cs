@@ -33,5 +33,6 @@ namespace Countries.Modelos
         public List<RegionalBloc> regionalBlocs { get; set; }
         public string cioc { get; set; }
         public string caminhoImage { get; set; }
+        public string caminhoThumbnail { get; set; }
     }
 }
