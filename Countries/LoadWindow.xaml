@@ -11,6 +11,6 @@
         <TextBlock x:Name="tblockStatus" HorizontalAlignment="Left" Margin="92,89,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="160"/>
         <ProgressBar x:Name="progressbar" HorizontalAlignment="Left" Height="15" Margin="92,128,0,0" VerticalAlignment="Top" Width="160"/>
         <TextBlock x:Name="tbTime" HorizontalAlignment="Center" Margin="10,148,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="166" Height="79" TextAlignment="Center"/>
-        <Button x:Name="Load" Margin="283,197,0,0" Width="40" Height="20" Click="Load_Click" Content="Load" IsEnabled="False"/>
+        <Button x:Name="btnLoad" Margin="283,197,0,0" Width="40" Height="20" Click="Load_Click" Content="Load" IsEnabled="False"/>
     </Grid>
 </Window>

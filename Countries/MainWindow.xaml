@@ -14,26 +14,65 @@
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="1">
 
-                <Image x:Name="imageFlag" DataContext="listBoxPaises" Source="{Binding Path=SelectedItem.caminhoImage}" Height="136" Width="169" VerticalAlignment="Top" Margin="0,20,0,0"/>
-                <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" DataContext="listBoxPaises" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
-                
+                <!--<Border BorderThickness="1" BorderBrush="#FF000000" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
+                    <Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>
+                </Border>-->
+                <Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>
+                <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
+
                 <Grid Grid.Column="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="0,70">
+                    <StackPanel Grid.Column="0" Margin="0,70,0,0">
 
-                        <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-
-                        <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-
-                        <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-
-                        <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" DataContext="listBoxPaies" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                        <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                        <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                        <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                        <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
 
                     </StackPanel>
                 </Grid>
+                <GroupBox x:Name="groupBoxCurrencies" Margin="10,0">
+                    <GroupBox.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <DataTrigger 
+                                     Binding ="{Binding ElementName=name, Path=Text}" 
+                                     Value="">
+                                    <Setter Property="GroupBox.Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </GroupBox.Style>
+                    <GroupBox.Header>
+                        <TextBlock Text="Currencies" FontSize="20"></TextBlock>
+                    </GroupBox.Header>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="5*"/>
+                        </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+
+                        <TextBlock Text="Country Currencies" Margin="20,0,0,5" FontSize="16"/>
+                        <ComboBox x:Name="cbCountryCurrencies" Margin="20,0" ItemsSource="{Binding Path=SelectedItem.currencies, TargetNullValue='No currencies'}" DisplayMemberPath="name" SelectedIndex="0" IsSynchronizedWithCurrentItem="True"/>
+                            <TextBox x:Name="countryAmount" Margin="20,10,20,0" Padding="2"/>
+                        </StackPanel>
+                        <DockPanel Grid.Column="1">
+                            <TextBlock Text="To" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,5,0,5"/>
+                            <Button VerticalAlignment="Top" Content="&lt;&gt;"/>
+                        </DockPanel>
+                    <StackPanel Grid.Column="2">
+
+                        <TextBlock Text="World Currencies" Margin="20,0,0,5" FontSize="16"/>
+                        <ComboBox x:Name="cbWorldCurrencies" Margin="20,0" DisplayMemberPath="name" SelectedIndex="0"/>
+                            <TextBox x:Name="worldAmount" Margin="20,10,20,0" Padding="2"/>
+                        </StackPanel>
+                </Grid>
+                </GroupBox>
             </StackPanel>
             <DockPanel VerticalAlignment="Stretch" Grid.Column="0" LastChildFill="True">
                 <Grid DockPanel.Dock="Top">
@@ -41,12 +80,10 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="searchbox" DataContext="listBoxPaises" HorizontalAlignment="Left" Height="23" Margin="0,0,0,10" TextWrapping="Wrap" Width="120" TextChanged="searchbox_TextChanged" Grid.Column="0"/>
+                    <TextBox x:Name="searchbox" HorizontalAlignment="Left" Height="23" Margin="0,0,0,10" TextWrapping="Wrap" Width="120" TextChanged="searchbox_TextChanged" Grid.Column="0"/>
                     <Button x:Name="btnList" Content="&lt;" HorizontalAlignment="Left" Margin="0,0,0,10"   Width="36" Click="Button_Click" Grid.Column="1"/>
                 </Grid>
-
                 <TabControl x:Name="tabContryContinent" SelectionChanged="TabControl_SelectionChanged">
-
                     <TabItem Header="Countries">
                         <Grid Background="#FFE5E5E5">
                             <ListBox x:Name ="listBoxPaises" SelectionChanged="listBoxPaises_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -62,10 +99,15 @@
                             </ListBox>
                         </Grid>
                     </TabItem>
-
                     <TabItem Header="Continents">
                         <Grid Background="#FFE5E5E5">
                             <TreeView x:Name="treeContinents" SelectedItemChanged="treeContinents_SelectedItemChanged">
+                                <!--Fica mais lento se tiver expanded-->
+                                <!--<TreeView.ItemContainerStyle>
+                                    <Style TargetType="TreeViewItem">
+                                        <Setter Property="TreeViewItem.IsExpanded" Value="True"/>
+                                    </Style>
+                                </TreeView.ItemContainerStyle>-->
                                 <TreeView.Resources>
                                     <HierarchicalDataTemplate DataType="{x:Type self:Continent}" ItemsSource="{Binding CountriesList}">
                                         <StackPanel Orientation="Horizontal">
@@ -83,7 +125,6 @@
                                         </StackPanel>
                                     </DataTemplate>
                                 </TreeView.Resources>
-
                             </TreeView>
                         </Grid>
                     </TabItem>

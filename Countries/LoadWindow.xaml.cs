@@ -16,6 +16,7 @@ namespace Countries
     public partial class LoadWindow : Window
     {
         private List<Country> Paises;
+        private List<Rate> Rates;
         private readonly ApiService apiService;
         private readonly NetworkService networkService;
         private readonly DirectoryInfo Location;
@@ -27,10 +28,10 @@ namespace Countries
             networkService = new NetworkService();
             Location = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent;
 
-            LoadCountries();
+            Load();
         }
 
-        private async void LoadCountries()
+        private async void Load()
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -47,6 +48,7 @@ namespace Countries
             tblockStatus.Text = "Loading APIs";
             tbTime.Text = "---------Time---------";
             await LoadApiRates();
+            await LoadApiCountries();
 
             tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
             var time = watch.ElapsedMilliseconds;
@@ -66,18 +68,18 @@ namespace Countries
             tbTime.Text += Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString();
             watch.Stop();
 
-            Load.IsEnabled = true;
+            btnLoad.IsEnabled = true;
 
             //MainWindow mw = new MainWindow(Paises);
             //mw.Show();
             //Close();
 
         }
-        private async Task LoadApiRates()
+        private async Task LoadApiCountries()
         {
             progressbar.Value = 0;
 
-            var response = await apiService.GetRates("http://restcountries.eu", "/rest/v2/all");
+            var response = await apiService.GetCountries("http://restcountries.eu", "/rest/v2/all");
 
             Paises = (List<Country>)response.Result;
 
@@ -87,6 +89,12 @@ namespace Countries
             };
 
             Paises.Add(temp);
+        }
+        private async Task LoadApiRates()
+        {
+            var response = await apiService.GetRates("https://cambiosrafa.azurewebsites.net", "/api/rates");
+
+            Rates = (List<Rate>)response.Result;
         }
 
         private async Task RunDownloadParallelAsync()
@@ -178,7 +186,7 @@ namespace Countries
 
         private void Load_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow mw = new MainWindow(Paises);
+            MainWindow mw = new MainWindow(Paises,Rates);
             mw.Show();
             Close();
         }

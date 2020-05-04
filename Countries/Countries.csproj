@@ -73,6 +73,7 @@
       <DependentUpon>LoadWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Modelos\Continent.cs" />
+    <Compile Include="Modelos\Rate.cs" />
     <Compile Include="Serviços\ApiService.cs" />
     <Compile Include="Serviços\NetworkService.cs" />
     <Page Include="LoadWindow.xaml">

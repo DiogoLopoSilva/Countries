@@ -6,6 +6,8 @@ namespace Countries
 {
     using Modelos;
     using Servicos;
+    using System;
+    using System.Collections.ObjectModel;
     using System.Linq;
 
     /// <summary>
@@ -14,18 +16,28 @@ namespace Countries
     public partial class MainWindow : Window
     {
         private readonly List<Country> Paises;
+        //public ObservableCollection<Rate> Rates { get; set; }
+        public List<Rate> Rates { get; set; }
         private readonly ApiService apiService;
         private readonly NetworkService networkService;
         private readonly List<Continent> Continents;
-        public MainWindow(List<Country> paises)
+        
+
+        public MainWindow(List<Country> paises, List<Rate> rates)
         {
             InitializeComponent();
-            apiService = new ApiService();
+            apiService = new ApiService(); 
             networkService = new NetworkService();
             Paises = paises;
+            //Rates = new ObservableCollection<Rate>(rates);
+            Rates = rates;
             Continents = GetContinents(Paises);
             listBoxPaises.ItemsSource = Paises;
             treeContinents.ItemsSource = Continents;
+
+            this.DataContext = listBoxPaises;
+
+            cbWorldCurrencies.ItemsSource = Rates;
         }
 
         private List<Continent> GetContinents(List<Country> Paises)
@@ -69,29 +81,44 @@ namespace Countries
 
         private void searchbox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (searchbox.DataContext.ToString() == "listBoxPaises")
-            {
-                if (Paises != null)
-                {
-                    IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(searchbox.Text.ToLower()));
+            SearchLists(searchbox.Text);
+        }
 
-                    listBoxPaises.ItemsSource = lista;
-                }
-            }
-            else
-            {
-                if (Paises != null)
-                {
-                    IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(searchbox.Text.ToLower()));
+        private void SearchLists(string text)
+        {
+            //if (searchbox.DataContext.ToString() == "listBoxPaises")
+            //{
+            //    if (Paises != null)
+            //    {
+            //        IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
 
-                    treeContinents.ItemsSource = GetContinents(lista.ToList());
-                }
+            //        listBoxPaises.ItemsSource = lista;
+            //    }
+            //}
+            //else
+            //{
+            //    if (Paises != null)
+            //    {
+            //        IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
+
+            //        treeContinents.ItemsSource = GetContinents(lista.ToList());
+            //    }
+            //}
+
+            if (Paises != null)
+            {
+                //listBoxPaises.SelectedIndex = -1;
+
+                IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
+
+                listBoxPaises.ItemsSource = lista;
+
+                treeContinents.ItemsSource = GetContinents(lista.ToList());
             }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
             //tabContryContinent.Width = tabContryContinent.Width == 300 ? 50 : 300;
             //tabContryContinent.HorizontalAlignment = HorizontalAlignment.Left;
             //btnList.Content = btnList.Content.ToString() == "<" ? ">" : "<";
@@ -102,36 +129,41 @@ namespace Countries
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (tabContryContinent.IsLoaded)
+            if (e.Source is TabControl)
             {
-                if (tabContryContinent.SelectedIndex == 0)
+                if (tabContryContinent.IsLoaded)
                 {
-                    searchbox.DataContext = "listBoxPaises";
+                    if (tabContryContinent.SelectedIndex == 0)
+                    {
+                        searchbox.DataContext = "listBoxPaises";
+                        this.DataContext = listBoxPaises;
+                    }
+                    else
+                    {
+                        searchbox.DataContext = "treeContinents";
+                        this.DataContext = treeContinents;
+                    }
+
+                    searchbox.Clear(); //Nao fazer isto, arranjar alternativa
                 }
-                else
-                {
-                    searchbox.DataContext = "treeContinents";
-                }
+
+               
+
+                //SearchLists(searchbox.Text);
             }
         }
         private void listBoxPaises_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            imageFlag.DataContext = listBoxPaises;
-            name.DataContext = listBoxPaises;
-            capital.DataContext = listBoxPaises;
-            population.DataContext = listBoxPaises;
-            gini.DataContext = listBoxPaises;
-            area.DataContext = listBoxPaises;
+            //this.DataContext = listBoxPaises;
+
+            //groupBoxCurrencies.Visibility = groupBoxCurrencies.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
 
         }
         private void treeContinents_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            imageFlag.DataContext = treeContinents;
-            name.DataContext = treeContinents;
-            capital.DataContext = treeContinents;
-            population.DataContext = treeContinents;
-            gini.DataContext = treeContinents;
-            area.DataContext = treeContinents;
+            //this.DataContext = treeContinents;
+
+            //groupBoxCurrencies.Visibility = groupBoxCurrencies.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
         }
     }
 }
