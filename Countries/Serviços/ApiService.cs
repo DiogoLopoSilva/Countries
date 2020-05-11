@@ -30,12 +30,12 @@
                     };
                 }
 
-                var rates = JsonConvert.DeserializeObject<List<Country>>(result);
+                var countries = JsonConvert.DeserializeObject<List<Country>>(result);
 
                 return new Response
                 {
                     IsSuccess = true,
-                    Result = rates
+                    Result = countries
                 };
             }
             catch (Exception ex)

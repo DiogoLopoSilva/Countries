@@ -20,6 +20,7 @@ namespace Countries
         private readonly ApiService apiService;
         private readonly NetworkService networkService;
         private readonly DirectoryInfo Location;
+        private readonly DataService dataService;
 
         public LoadWindow()
         {
@@ -27,53 +28,66 @@ namespace Countries
             apiService = new ApiService();
             networkService = new NetworkService();
             Location = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent;
-
+            dataService = new DataService();
             Load();
         }
 
         private async void Load()
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            bool load;
 
-            if (!Directory.Exists(Location.FullName + "\\Images\\"))
+            var connection = networkService.CheckConnection();
+
+            if (!connection.IsSuccess)
             {
-                Directory.CreateDirectory(Location.FullName + "\\Images\\");
+                //LoadLocalRates();
+                load = false;
             }
-
-            if (!Directory.Exists(Location.FullName + "\\Images\\Thumbnails\\"))
+            else
             {
-                Directory.CreateDirectory(Location.FullName + "\\Images\\Thumbnails\\");
-            }
+                load = true;
 
-            tblockStatus.Text = "Loading APIs";
-            tbTime.Text = "---------Time---------";
-            await LoadApiRates();
-            await LoadApiCountries();
+                var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
-            var time = watch.ElapsedMilliseconds;
+                if (!Directory.Exists(Location.FullName + "\\Images\\"))
+                {
+                    Directory.CreateDirectory(Location.FullName + "\\Images\\");
+                }
 
-            tblockStatus.Text = "Fetching Flags";
-            await RunDownloadParallelAsync();
+                if (!Directory.Exists(Location.FullName + "\\Images\\Thumbnails\\"))
+                {
+                    Directory.CreateDirectory(Location.FullName + "\\Images\\Thumbnails\\");
+                }
 
-            tbTime.Text += Environment.NewLine + "Download Time: " + (watch.ElapsedMilliseconds - time).ToString();
-            time = watch.ElapsedMilliseconds;
+                tblockStatus.Text = "Loading APIs";
+                tbTime.Text = "---------Time---------";
+                await LoadApiRates();
+                await LoadApiCountries();
 
-            tblockStatus.Text = "Converting Flags";
-            await ConvertAsync();
+                tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
+                var time = watch.ElapsedMilliseconds;
 
-            tbTime.Text += Environment.NewLine + "Convert Time: " + (watch.ElapsedMilliseconds - time).ToString();
+                tblockStatus.Text = "Fetching Flags";
+                await RunDownloadParallelAsync();
 
-            tblockStatus.Text = "Done";
-            tbTime.Text += Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString();
-            watch.Stop();
+                tbTime.Text += Environment.NewLine + "Download Time: " + (watch.ElapsedMilliseconds - time).ToString();
+                time = watch.ElapsedMilliseconds;
 
-            btnLoad.IsEnabled = true;
+                tblockStatus.Text = "Converting Flags";
+                await ConvertAsync();
+
+                tbTime.Text += Environment.NewLine + "Convert Time: " + (watch.ElapsedMilliseconds - time).ToString();
+
+                tblockStatus.Text = "Done";
+                tbTime.Text += Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString();
+                watch.Stop();
+
+                btnLoad.IsEnabled = true;
+            }          
 
             //MainWindow mw = new MainWindow(Paises);
             //mw.Show();
             //Close();
-
         }
         private async Task LoadApiCountries()
         {
@@ -83,12 +97,16 @@ namespace Countries
 
             Paises = (List<Country>)response.Result;
 
-            Country temp = new Country
-            {
-                name = "TESTE EMPTY FLAG"
-            };
+            //Country temp = new Country
+            //{
+            //    name = "TESTE EMPTY FLAG",
+            //    capital="TESTE"
+            //};
 
-            Paises.Add(temp);
+            //Paises.Add(temp);
+
+            dataService.DeleteData();
+            dataService.SaveData(Paises);
         }
         private async Task LoadApiRates()
         {

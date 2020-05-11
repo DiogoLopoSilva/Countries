@@ -21,6 +21,7 @@ namespace Countries
         private readonly ApiService apiService;
         private readonly NetworkService networkService;
         private readonly List<Continent> Continents;
+        //private readonly DataService dataService;
         
 
         public MainWindow(List<Country> paises, List<Rate> rates)
@@ -28,6 +29,7 @@ namespace Countries
             InitializeComponent();
             apiService = new ApiService(); 
             networkService = new NetworkService();
+            //dataService = new DataService();
             Paises = paises;
             //Rates = new ObservableCollection<Rate>(rates);
             Rates = rates;
@@ -38,6 +40,9 @@ namespace Countries
             this.DataContext = listBoxPaises;
 
             cbWorldCurrencies.ItemsSource = Rates;
+
+            //dataService.DeleteData();
+            //dataService.SaveData(Paises);
         }
 
         private List<Continent> GetContinents(List<Country> Paises)
