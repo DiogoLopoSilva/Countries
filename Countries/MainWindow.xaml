@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:self="clr-namespace:Countries.Modelos"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:svg="clr-namespace:SharpVectors.Converters;assembly=SharpVectors.Converters.Wpf"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="800" WindowStartupLocation="CenterScreen">
     <Border Padding="10">
@@ -17,7 +19,8 @@
                 <!--<Border BorderThickness="1" BorderBrush="#FF000000" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
                     <Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>
                 </Border>-->
-                <Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>
+                <svg:SvgViewbox Height="125" Width="250" VerticalAlignment="Top" Source="{Binding Path=SelectedItem.caminhoImage}"/>
+                <!--<Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>-->
                 <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
 
                 <Grid Grid.Column="1">

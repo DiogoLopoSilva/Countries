@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Data.SQLite;
     using System.IO;
+    using System.Threading.Tasks;
     using System.Windows;
 
     public class DataService
@@ -44,13 +45,13 @@
 
                 command.ExecuteNonQuery();
             }
-            catch ()
+            catch
             {
 
             }
         }
 
-        public void SaveData(List<Country> Countries)
+        public async Task SaveData(List<Country> Countries)
         {
             try
             {
@@ -75,7 +76,7 @@
 
                     command = new SQLiteCommand(sql, connection);
 
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
 
                     foreach (var currency in country.currencies)
                     {
@@ -92,13 +93,13 @@
 
                             command = new SQLiteCommand(sql, connection);
 
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
 
                             sql = $"insert into CountryCurrencies(countrycode,currencyname) values('{country.alpha3Code}','{currencyname}')";
 
                             command = new SQLiteCommand(sql, connection);
 
-                            command.ExecuteNonQuery();
+                            await command.ExecuteNonQueryAsync();
                         }
                     }                
                 }
@@ -139,35 +140,36 @@
 
                 return rates;
             }
-            catch ()
+            catch
             {
                 return null;
             }
         }
 
-        public void DeleteData()
+        public async Task DeleteData()
         {
             try
             {
-                string sql = "delete from CountryCurrency";
+                string sql = "delete from Countries";
 
                 command = new SQLiteCommand(sql, connection);
 
-                command.ExecuteNonQuery();
-
-                sql = "delete from Countries";
-
-                command = new SQLiteCommand(sql, connection);
-
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync();
 
                 sql = "delete from Currencies";
 
                 command = new SQLiteCommand(sql, connection);
 
-                command.ExecuteNonQuery();
+                await command.ExecuteNonQueryAsync();
+
+                sql = "delete from CountryCurrency";
+
+                command = new SQLiteCommand(sql, connection);
+
+                await command.ExecuteNonQueryAsync();
+
             }
-            catch ()
+            catch
             {
               
             }

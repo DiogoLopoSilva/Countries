@@ -6,6 +6,7 @@ namespace Countries
 {
     using Modelos;
     using Servicos;
+    using Svg;
     using System;
     using System.Collections.ObjectModel;
     using System.Linq;
@@ -22,7 +23,6 @@ namespace Countries
         private readonly NetworkService networkService;
         private readonly List<Continent> Continents;
         //private readonly DataService dataService;
-        
 
         public MainWindow(List<Country> paises, List<Rate> rates)
         {
