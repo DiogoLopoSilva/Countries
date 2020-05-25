@@ -33,16 +33,12 @@ namespace Countries
             Paises = paises;
             //Rates = new ObservableCollection<Rate>(rates);
             Rates = rates;
-            Continents = GetContinents(Paises);
+
             listBoxPaises.ItemsSource = Paises;
-            treeContinents.ItemsSource = Continents;
-
-            this.DataContext = listBoxPaises;
-
+            treeContinents.ItemsSource = GetContinents(Paises);
             cbWorldCurrencies.ItemsSource = Rates;
 
-            //dataService.DeleteData();
-            //dataService.SaveData(Paises);
+            this.DataContext = listBoxPaises;
         }
 
         private List<Continent> GetContinents(List<Country> Paises)
@@ -149,12 +145,12 @@ namespace Countries
                         this.DataContext = treeContinents;
                     }
 
-                    searchbox.Clear(); //Nao fazer isto, arranjar alternativa
+                    //searchbox.Clear(); //Nao fazer isto, arranjar alternativa
                 }
 
                
 
-                //SearchLists(searchbox.Text);
+                SearchLists(searchbox.Text);
             }
         }
         private void listBoxPaises_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -163,12 +159,31 @@ namespace Countries
 
             //groupBoxCurrencies.Visibility = groupBoxCurrencies.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
 
+            //Country pais = Paises.Find(x => x.name == ((Country)listBoxPaises.SelectedItem).name);
+
+            //var item = treeContinents.ItemContainerGenerator.ContainerFromItem(treeContinents.SelectedItem) as TreeViewItem;
+
+            //if (item!=null)
+            //{
+            //    item.IsSelected = true;
+            //}
         }
         private void treeContinents_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             //this.DataContext = treeContinents;
 
             //groupBoxCurrencies.Visibility = groupBoxCurrencies.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
+
+            //Country country = (Country)treeContinents.SelectedItem;
+
+            listBoxPaises.SelectedItem = treeContinents.SelectedItem;
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            Grid.SetColumn(countryCurrenciesPanel, Grid.GetColumn(countryCurrenciesPanel)==0?2:0);
+
+            Grid.SetColumn(worldCurrenciesPanel, Grid.GetColumn(worldCurrenciesPanel) == 2 ? 0 : 2);
         }
     }
 }

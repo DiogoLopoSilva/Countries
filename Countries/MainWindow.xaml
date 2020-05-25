@@ -7,7 +7,7 @@
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         xmlns:svg="clr-namespace:SharpVectors.Converters;assembly=SharpVectors.Converters.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800" WindowStartupLocation="CenterScreen">
+        Title="MainWindow" Height="600" Width="1000" WindowStartupLocation="CenterScreen" MinWidth="800" MaxWidth="1000">
     <Border Padding="10">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -29,21 +29,23 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Margin="0,70,0,0">
-
                         <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                        <TextBlock x:Name="regiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.region, StringFormat=Region: {0},TargetNullValue='Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                        <TextBlock x:Name="subregiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.subregion, StringFormat=Sub-Region: {0},TargetNullValue='Sub-Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,70,0,0">
                         <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
                         <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
                         <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-
                     </StackPanel>
                 </Grid>
-                <GroupBox x:Name="groupBoxCurrencies" Margin="10,0">
+                <GroupBox x:Name="groupBoxCurrencies" Margin="10,40,10,0">
                     <GroupBox.Style>
                         <Style>
                             <Style.Triggers>
                                 <DataTrigger 
                                      Binding ="{Binding ElementName=name, Path=Text}" 
-                                     Value="">
+                                     Value="a">
                                     <Setter Property="GroupBox.Visibility" Value="Hidden"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -58,7 +60,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="5*"/>
                         </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <StackPanel x:Name="countryCurrenciesPanel" Grid.Column="0">
 
                         <TextBlock Text="Country Currencies" Margin="20,0,0,5" FontSize="16"/>
                         <ComboBox x:Name="cbCountryCurrencies" Margin="20,0" ItemsSource="{Binding Path=SelectedItem.currencies, TargetNullValue='No currencies'}" DisplayMemberPath="name" SelectedIndex="0" IsSynchronizedWithCurrentItem="True"/>
@@ -66,9 +68,9 @@
                         </StackPanel>
                         <DockPanel Grid.Column="1">
                             <TextBlock Text="To" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                            <Button VerticalAlignment="Top" Content="&lt;&gt;"/>
+                            <Button VerticalAlignment="Top" Content="&lt;&gt;" Click="Button_Click_1"/>
                         </DockPanel>
-                    <StackPanel Grid.Column="2">
+                        <StackPanel x:Name="worldCurrenciesPanel"  Grid.Column="2">
 
                         <TextBlock Text="World Currencies" Margin="20,0,0,5" FontSize="16"/>
                         <ComboBox x:Name="cbWorldCurrencies" Margin="20,0" DisplayMemberPath="name" SelectedIndex="0"/>

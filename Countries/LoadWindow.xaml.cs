@@ -38,13 +38,21 @@ namespace Countries
 
             var connection = networkService.CheckConnection();
 
-            if (!connection.IsSuccess)
+            bool test = true;
+
+            if(!test)
+            //if (!connection.IsSuccess)
             {
                 //LoadLocalRates();
+
+                Paises = dataService.GetData();
+
                 load = false;
             }
             else
             {
+                List<Task> tasks = new List<Task>();
+
                 load = true;
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -61,32 +69,35 @@ namespace Countries
 
                 tblockStatus.Text = "Loading APIs";
                 tbTime.Text = "---------Time---------";
-                await LoadApiRates();
+                tasks.Add( LoadApiRates());
                 await LoadApiCountries();
-
-                await dataService.DeleteData();
-                await dataService.SaveData(Paises);
 
                 tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
                 var time = watch.ElapsedMilliseconds;
 
+                tblockStatus.Text = "Updating DB";
+                await Task.Run(() => dataService.DeleteData());
+                tasks.Add(Task.Run(() => dataService.SaveData(Paises)));
+
+                tbTime.Text += Environment.NewLine + "Updating Time: " + watch.ElapsedMilliseconds.ToString();
+                time = watch.ElapsedMilliseconds;
+
                 tblockStatus.Text = "Fetching Flags";
-                await RunDownloadParallelAsync();
+                tasks.Add(RunDownloadParallelAsync());
 
                 tbTime.Text += Environment.NewLine + "Download Time: " + (watch.ElapsedMilliseconds - time).ToString();
                 time = watch.ElapsedMilliseconds;
 
-                tblockStatus.Text = "Converting Flags";
-                //await ConvertAsync();
-
-                tbTime.Text += Environment.NewLine + "Convert Time: " + (watch.ElapsedMilliseconds - time).ToString();
+                await Task.WhenAll(tasks);
 
                 tblockStatus.Text = "Done";
                 tbTime.Text += Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString();
                 watch.Stop();
 
-                btnLoad.IsEnabled = true;
-            }          
+               
+            }
+
+            btnLoad.IsEnabled = true;
 
             //MainWindow mw = new MainWindow(Paises);
             //mw.Show();
@@ -100,13 +111,14 @@ namespace Countries
 
             Paises = (List<Country>)response.Result;
 
-            //Country temp = new Country
-            //{
-            //    name = "TESTE EMPTY FLAG",
-            //    capital="TESTE"
-            //};
+            Country temp = new Country
+            {
+                name = "TESTE EMPTY FLAG",
+                capital = "TESTE",
+                currencies = new List<Currency>()
+            };
 
-            //Paises.Add(temp);
+            Paises.Add(temp);
         }
         private async Task LoadApiRates()
         {
@@ -121,9 +133,22 @@ namespace Countries
 
             foreach (Country pais in Paises)
             {
-                if (!File.Exists($"{Location.FullName}\\Images\\{pais.name}.svg") && !string.IsNullOrEmpty(pais.flag))
+                if (!File.Exists($"{Location.FullName}\\Images\\{pais.name}.svg"))
                 {
                     tasks.Add(Task.Run(() => DownloadSVG(Location, pais)));
+                }
+                else
+                {
+                    pais.caminhoImage = $"{Location.FullName}\\Images\\{pais.name}.svg";
+                }
+
+                if (!File.Exists($"{Location.FullName}\\Images\\Thumbnails\\{pais.name}.png"))
+                {
+                    tasks.Add(Task.Run(() => DownloadThumbnail(Location, pais)));
+                }
+                else
+                {
+                    pais.caminhoThumbnail = $"{Location.FullName}\\Images\\Thumbnails\\{pais.name}.png";
                 }
             }
 
@@ -134,23 +159,39 @@ namespace Countries
         {
             string path = Location.FullName + "\\Images\\";
 
-            WebClient webClient = new WebClient();
-
-            try
+            using (WebClient webClient= new WebClient())
             {
-                webClient.DownloadFile(new Uri(pais.flag), $"{path}{pais.name}.svg");
-                webClient.DownloadFile(new Uri("https://www.countryflags.io/" + $"{pais.alpha2Code}" + "/shiny/64.png"), $"{path}Thumbnails\\{pais.name}.png");
+                try
+                {
+                    webClient.DownloadFile(new Uri(pais.flag), $"{path}{pais.name}.svg");
 
-
-                pais.caminhoImage = Location.FullName + "\\Images\\" + pais.name + ".svg";
-                pais.caminhoThumbnail = Location.FullName + "\\Images\\" + "\\Thumbnails\\" + pais.name + ".png";
+                    pais.caminhoImage = path + pais.name + ".svg";
+                }
+                catch
+                {
+                    pais.caminhoImage = Location.FullName + "\\Resources\\notavailable.svg";
+                }
             }
-            catch
+        }
+
+        private void DownloadThumbnail(DirectoryInfo Location, Country pais)
+        {
+            string path = Location.FullName + "\\Images\\"+"\\Thumbnails\\";
+
+            using (WebClient webClient = new WebClient())
             {
-                pais.caminhoThumbnail = Location.FullName + "\\Resources\\notavailable.png";
-            }
+                try
+                {
+                    webClient.DownloadFile(new Uri("https://www.countryflags.io/" + $"{pais.alpha2Code}" + "/shiny/64.png"), $"{path}{pais.name}.png");
 
-            webClient.Dispose();
+                    pais.caminhoThumbnail = path + pais.name + ".png";
+                }
+                catch
+                {
+
+
+                }
+            }
         }
 
         private async Task ConvertAsync()

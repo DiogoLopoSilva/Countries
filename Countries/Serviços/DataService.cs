@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data.SQLite;
+    using System.Globalization;
     using System.IO;
     using System.Threading.Tasks;
     using System.Windows;
@@ -35,13 +36,13 @@
 
                 sqlcommand = "create table if not exists Currencies(code nchar , name nchar unique, symbol nchar)";
 
-                command = new SQLiteCommand(sqlcommand, connection);
+                command.CommandText = sqlcommand;
 
                 command.ExecuteNonQuery();
 
                 sqlcommand = "create table if not exists CountryCurrencies(countrycode char(3),currencyname nchar, FOREIGN KEY(countrycode) REFERENCES Countries(alpha3code), FOREIGN KEY(currencyname) REFERENCES Currencies(name))";
 
-                command = new SQLiteCommand(sqlcommand, connection);
+                command.CommandText = sqlcommand;
 
                 command.ExecuteNonQuery();
             }
@@ -74,7 +75,7 @@
                     string sql = $"insert into Countries(alpha3code, alpha2code, name, capital, region, subregion, population, area, gini)" +
                         $" values('{country.alpha3Code}','{country.alpha2Code}','{name}','{capital}','{country.region}','{country.subregion}',{country.population},'{country.area}','{country.gini}')";
 
-                    command = new SQLiteCommand(sql, connection);
+                    command.CommandText = sql;
 
                     await command.ExecuteNonQueryAsync();
 
@@ -91,13 +92,13 @@
 
                             sql = $"insert or ignore into Currencies(code,name,symbol) values('{currency.code}','{currencyname}','{currency.symbol}')";
 
-                            command = new SQLiteCommand(sql, connection);
+                            command.CommandText = sql;
 
                             await command.ExecuteNonQueryAsync();
 
                             sql = $"insert into CountryCurrencies(countrycode,currencyname) values('{country.alpha3Code}','{currencyname}')";
 
-                            command = new SQLiteCommand(sql, connection);
+                            command.CommandText = sql;
 
                             await command.ExecuteNonQueryAsync();
                         }
@@ -112,37 +113,69 @@
             }           
         }
 
-        public List<Rate> GetData()
+        public List<Country> GetData()
         {
-            List<Rate> rates = new List<Rate>();
+            List<Country> countries = new List<Country>();
 
             try
             {
-                string sql = "select rateId, code, taxRate, name from Rates";
+                string sql = "select alpha3code, alpha2code, name, capital, region, subregion, population, area, gini from Countries";
 
                 command = new SQLiteCommand(sql, connection);
 
                 //Lê cada registo
                 SQLiteDataReader reader = command.ExecuteReader();
+                // string test=null;
 
                 while (reader.Read())
                 {
-                    rates.Add(new Rate
+                    countries.Add(new Country
                     {
-                        rateId = (int)reader["rateId"],
-                        code = (string)reader["code"],
-                        taxRate = (double)reader["taxRate"],
-                        name = (string)reader["name"]
+                        alpha3Code = (string)reader["alpha3code"],
+                        alpha2Code = (string)reader["alpha2code"],
+                        name = (string)reader["name"],
+                        capital = (string)reader["capital"],
+                        region = (string)reader["region"],
+                        subregion = (string)reader["subregion"],
+                        population = (int)reader["population"],
+                        area = Convert.ToDouble((decimal)reader["area"]),
+                        gini = Convert.ToDouble((decimal)reader["gini"]),
+                        currencies=new List<Currency>()
                     });
                 }
 
+                CountriesCurrency(countries);
+
                 connection.Close();
 
-                return rates;
+                return countries;
             }
-            catch
+            catch(Exception e)
             {
+                MessageBox.Show(e.Message);
                 return null;
+            }
+        }
+
+        private void CountriesCurrency(List<Country> countries)
+        {
+            foreach (Country country in countries)
+            {
+                string sql = $"select DISTINCT Currencies.code,Currencies.name,Currencies.symbol From CountryCurrencies INNER JOIN Currencies on currencyname = Currencies.name INNER JOIN Countries on countrycode = alpha3code WHERE alpha3code = \"{country.alpha3Code}\"";
+
+                command = new SQLiteCommand(sql, connection);
+
+                SQLiteDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    country.currencies.Add(new Currency
+                    {
+                        code = (string)reader["code"],
+                        name = (string)reader["name"],
+                        symbol = (string)reader["symbol"]
+                    });
+                }
             }
         }
 
@@ -152,19 +185,19 @@
             {
                 string sql = "delete from Countries";
 
-                command = new SQLiteCommand(sql, connection);
+                command.CommandText = sql;
 
                 await command.ExecuteNonQueryAsync();
 
                 sql = "delete from Currencies";
 
-                command = new SQLiteCommand(sql, connection);
+                command.CommandText = sql;
 
                 await command.ExecuteNonQueryAsync();
 
                 sql = "delete from CountryCurrency";
 
-                command = new SQLiteCommand(sql, connection);
+                command.CommandText = sql;
 
                 await command.ExecuteNonQueryAsync();
 
