@@ -195,16 +195,16 @@
 
                 await command.ExecuteNonQueryAsync();
 
-                sql = "delete from CountryCurrency";
+                sql = "delete from CountryCurrencies";
 
                 command.CommandText = sql;
 
                 await command.ExecuteNonQueryAsync();
 
             }
-            catch
+            catch(Exception e)
             {
-              
+                MessageBox.Show(e.Message);
             }
         }
     }

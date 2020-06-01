@@ -40,20 +40,15 @@ namespace Countries
 
             bool test = true;
 
-            if(!test)
-            //if (!connection.IsSuccess)
+            //if(!test)
+            if (!connection.IsSuccess)
             {
-                //LoadLocalRates();
-
-                Paises = dataService.GetData();
-
+                LoadLocalData();
                 load = false;
             }
             else
             {
-                List<Task> tasks = new List<Task>();
-
-                load = true;
+                List<Task> tasks = new List<Task>();             
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
 
@@ -67,42 +62,68 @@ namespace Countries
                     Directory.CreateDirectory(Location.FullName + "\\Images\\Thumbnails\\");
                 }
 
-                tblockStatus.Text = "Loading APIs";
-                tbTime.Text = "---------Time---------";
-                tasks.Add( LoadApiRates());
+                //tblockStatus.Text = "Loading APIs";
+                //tbTime.Text = "---------Time---------";
+                tasks.Add(LoadApiRates());
                 await LoadApiCountries();
 
-                tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
-                var time = watch.ElapsedMilliseconds;
+                //tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
+                //var time = watch.ElapsedMilliseconds;
 
-                tblockStatus.Text = "Updating DB";
+                //tblockStatus.Text = "Updating DB";
                 await Task.Run(() => dataService.DeleteData());
                 tasks.Add(Task.Run(() => dataService.SaveData(Paises)));
 
-                tbTime.Text += Environment.NewLine + "Updating Time: " + watch.ElapsedMilliseconds.ToString();
-                time = watch.ElapsedMilliseconds;
+                //tbTime.Text += Environment.NewLine + "Updating Time: " + watch.ElapsedMilliseconds.ToString();
+                //time = watch.ElapsedMilliseconds;
 
-                tblockStatus.Text = "Fetching Flags";
+                //tblockStatus.Text = "Fetching Flags";
                 tasks.Add(RunDownloadParallelAsync());
 
-                tbTime.Text += Environment.NewLine + "Download Time: " + (watch.ElapsedMilliseconds - time).ToString();
-                time = watch.ElapsedMilliseconds;
+                //tbTime.Text += Environment.NewLine + "Download Time: " + (watch.ElapsedMilliseconds - time).ToString();
+                //time = watch.ElapsedMilliseconds;
 
                 await Task.WhenAll(tasks);
 
-                tblockStatus.Text = "Done";
-                tbTime.Text += Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString();
-                watch.Stop();
+                load = true;
 
-               
+                //tblockStatus.Text = "Done";
+                tbTime.Text = Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString()+ Environment.NewLine;
+                watch.Stop();               
             }
 
-            btnLoad.IsEnabled = true;
+            if (Paises.Count == 0)
+            {
+                tbTime.Text += "Não há ligação à Internet" + Environment.NewLine +
+                    "e não foram previamente carregadas as taxas." + Environment.NewLine +
+                    "Tente mais tarde!";
+
+                tblockStatus.Text += "Primeira inicialização deverá ter ligação à Internet";
+
+                return;
+            }
+
+            if (load)
+            {
+                tblockStatus.Text = $"Taxas carregadas da internet em {DateTime.Now}";
+            }
+            else
+            {
+                tblockStatus.Text = "Taxas carregadas da Base de Dados.";
+            }
+
+            btnLoad.Visibility = Visibility.Visible;
 
             //MainWindow mw = new MainWindow(Paises);
             //mw.Show();
             //Close();
         }
+
+        private void LoadLocalData()
+        {
+            Paises = dataService.GetData();
+        }
+
         private async Task LoadApiCountries()
         {
             progressbar.Value = 0;
@@ -249,7 +270,9 @@ namespace Countries
 
         private void Load_Click(object sender, RoutedEventArgs e)
         {
-            MainWindow mw = new MainWindow(Paises,Rates);
+            var connection = networkService.CheckConnection();
+
+            MainWindow mw = new MainWindow(Paises,Rates,connection.IsSuccess);
             mw.Show();
             Close();
         }

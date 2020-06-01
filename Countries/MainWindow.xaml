@@ -1,4 +1,5 @@
 ﻿<Window x:Class="Countries.MainWindow"
+        x:Name="WindowCountry"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,6 +7,7 @@
         xmlns:self="clr-namespace:Countries.Modelos"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         xmlns:svg="clr-namespace:SharpVectors.Converters;assembly=SharpVectors.Converters.Wpf"
+        xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1000" WindowStartupLocation="CenterScreen" MinWidth="800" MaxWidth="1000">
     <Border Padding="10">
@@ -14,71 +16,78 @@
                 <ColumnDefinition Width="0.9*" MaxWidth="360"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="1">
+            <TabControl x:Name="tabContry" SelectionChanged="TabControl_SelectionChanged" Grid.Column="1" Margin="10,0">
+                <TabItem Header="Country">
+                    <StackPanel>
 
-                <!--<Border BorderThickness="1" BorderBrush="#FF000000" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
+                        <!--<Border BorderThickness="1" BorderBrush="#FF000000" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
                     <Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>
                 </Border>-->
-                <svg:SvgViewbox Height="125" Width="250" VerticalAlignment="Top" Source="{Binding Path=SelectedItem.caminhoImage}"/>
-                <!--<Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>-->
-                <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
+                        <svg:SvgViewbox Margin="0,20,0,0" Height="125" Width="250" VerticalAlignment="Top" Source="{Binding Path=SelectedItem.caminhoImage}"/>
+                        <!--<Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>-->
+                        <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
 
-                <Grid Grid.Column="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="0,70,0,0">
-                        <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                        <TextBlock x:Name="regiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.region, StringFormat=Region: {0},TargetNullValue='Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                        <TextBlock x:Name="subregiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.subregion, StringFormat=Sub-Region: {0},TargetNullValue='Sub-Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="0,70,0,0">
-                        <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                        <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                        <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                    </StackPanel>
-                </Grid>
-                <GroupBox x:Name="groupBoxCurrencies" Margin="10,40,10,0">
-                    <GroupBox.Style>
-                        <Style>
-                            <Style.Triggers>
-                                <DataTrigger 
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,70,0,0">
+                                <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                                <TextBlock x:Name="regiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.region, StringFormat=Region: {0},TargetNullValue='Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                                <TextBlock x:Name="subregiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.subregion, StringFormat=Sub-Region: {0},TargetNullValue='Sub-Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="0,70,0,0">
+                                <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                                <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                                <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
+                            </StackPanel>
+                        </Grid>
+                        <GroupBox x:Name="groupBoxCurrencies" Margin="10,40,10,0">
+                            <GroupBox.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger 
                                      Binding ="{Binding ElementName=name, Path=Text}" 
-                                     Value="a">
-                                    <Setter Property="GroupBox.Visibility" Value="Hidden"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </GroupBox.Style>
-                    <GroupBox.Header>
-                        <TextBlock Text="Currencies" FontSize="20"></TextBlock>
-                    </GroupBox.Header>
-                <Grid Margin="0,10,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="5*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="5*"/>
-                        </Grid.ColumnDefinitions>
-                    <StackPanel x:Name="countryCurrenciesPanel" Grid.Column="0">
+                                     Value="">
+                                            <Setter Property="GroupBox.Visibility" Value="Hidden"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </GroupBox.Style>
+                            <GroupBox.Header>
+                                <TextBlock Text="Currencies" FontSize="20"></TextBlock>
+                            </GroupBox.Header>
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="5*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="5*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel x:Name="countryCurrenciesPanel" Grid.Column="0">
 
-                        <TextBlock Text="Country Currencies" Margin="20,0,0,5" FontSize="16"/>
-                        <ComboBox x:Name="cbCountryCurrencies" Margin="20,0" ItemsSource="{Binding Path=SelectedItem.currencies, TargetNullValue='No currencies'}" DisplayMemberPath="name" SelectedIndex="0" IsSynchronizedWithCurrentItem="True"/>
-                            <TextBox x:Name="countryAmount" Margin="20,10,20,0" Padding="2"/>
-                        </StackPanel>
-                        <DockPanel Grid.Column="1">
-                            <TextBlock Text="To" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                            <Button VerticalAlignment="Top" Content="&lt;&gt;" Click="Button_Click_1"/>
-                        </DockPanel>
-                        <StackPanel x:Name="worldCurrenciesPanel"  Grid.Column="2">
+                                    <TextBlock Text="Country Currencies" Margin="20,0,0,5" FontSize="16"/>
+                                    <ComboBox x:Name="cbCountryCurrencies" Margin="20,0" ItemsSource="{Binding Path=SelectedItem.currencies, TargetNullValue='No currencies'}" DisplayMemberPath="name" SelectedIndex="0" IsSynchronizedWithCurrentItem="True"/>
+                                    <TextBox x:Name="countryAmount" Margin="20,10,20,0" Padding="2"/>
+                                </StackPanel>
+                                <DockPanel Grid.Column="1">
+                                    <TextBlock Text="To" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,5,0,5"/>
+                                    <Button VerticalAlignment="Top" Content="&lt;&gt;" Click="Button_Click_1"/>
+                                </DockPanel>
+                                <StackPanel x:Name="worldCurrenciesPanel"  Grid.Column="2">
 
-                        <TextBlock Text="World Currencies" Margin="20,0,0,5" FontSize="16"/>
-                        <ComboBox x:Name="cbWorldCurrencies" Margin="20,0" DisplayMemberPath="name" SelectedIndex="0"/>
-                            <TextBox x:Name="worldAmount" Margin="20,10,20,0" Padding="2"/>
-                        </StackPanel>
-                </Grid>
-                </GroupBox>
-            </StackPanel>
+                                    <TextBlock Text="World Currencies" Margin="20,0,0,5" FontSize="16"/>
+                                    <ComboBox x:Name="cbWorldCurrencies" Margin="20,0" DisplayMemberPath="name" SelectedIndex="0"/>
+                                    <TextBox x:Name="worldAmount" Margin="20,10,20,0" Padding="2"/>
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+                    </StackPanel>
+                </TabItem>
+                <TabItem x:Name="TabMap" Header="Map">
+                    <m:Map x:Name="Mapa" CredentialsProvider="ESJy2HQqraj3EpYEuuSU~VP1FapcESWV_tsliR6VpdQ~AsSwQMy4RPAyJCMgNlKhaO9KEYv4QE7N_lQj4wTspWr5w3wsoyGFLf8S6zlLuNwc"  ZoomLevel="7"/>
+                </TabItem>
+            </TabControl>
             <DockPanel VerticalAlignment="Stretch" Grid.Column="0" LastChildFill="True">
                 <Grid DockPanel.Dock="Top">
                     <Grid.ColumnDefinitions>
@@ -106,13 +115,14 @@
                     </TabItem>
                     <TabItem Header="Continents">
                         <Grid Background="#FFE5E5E5">
-                            <TreeView x:Name="treeContinents" SelectedItemChanged="treeContinents_SelectedItemChanged">
+                            <TreeView x:Name="treeContinents" SelectedItemChanged="treeContinents_SelectedItemChanged"
+                                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                                 <!--Fica mais lento se tiver expanded-->
-                                <!--<TreeView.ItemContainerStyle>
+                                <TreeView.ItemContainerStyle>
                                     <Style TargetType="TreeViewItem">
                                         <Setter Property="TreeViewItem.IsExpanded" Value="True"/>
                                     </Style>
-                                </TreeView.ItemContainerStyle>-->
+                                </TreeView.ItemContainerStyle>
                                 <TreeView.Resources>
                                     <HierarchicalDataTemplate DataType="{x:Type self:Continent}" ItemsSource="{Binding CountriesList}">
                                         <StackPanel Orientation="Horizontal">

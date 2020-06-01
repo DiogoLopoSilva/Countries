@@ -4,6 +4,7 @@ using System.Windows.Controls;
 
 namespace Countries
 {
+    using Microsoft.Maps.MapControl.WPF;
     using Modelos;
     using Servicos;
     using Svg;
@@ -24,21 +25,28 @@ namespace Countries
         private readonly List<Continent> Continents;
         //private readonly DataService dataService;
 
-        public MainWindow(List<Country> paises, List<Rate> rates)
+        public MainWindow(List<Country> paises, List<Rate> rates, bool connection)
         {
             InitializeComponent();
-            apiService = new ApiService(); 
+            apiService = new ApiService();
             networkService = new NetworkService();
             //dataService = new DataService();
             Paises = paises;
             //Rates = new ObservableCollection<Rate>(rates);
             Rates = rates;
 
+            if (!connection)
+            {
+                TabMap.Visibility = Visibility.Hidden;
+            }
+
             listBoxPaises.ItemsSource = Paises;
             treeContinents.ItemsSource = GetContinents(Paises);
             cbWorldCurrencies.ItemsSource = Rates;
 
             this.DataContext = listBoxPaises;
+
+            listBoxPaises.SelectedIndex = 0;
         }
 
         private List<Continent> GetContinents(List<Country> Paises)
@@ -115,6 +123,8 @@ namespace Countries
                 listBoxPaises.ItemsSource = lista;
 
                 treeContinents.ItemsSource = GetContinents(lista.ToList());
+
+                listBoxPaises.SelectedIndex = 0;
             }
         }
 
@@ -130,28 +140,28 @@ namespace Countries
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.Source is TabControl)
-            {
-                if (tabContryContinent.IsLoaded)
-                {
-                    if (tabContryContinent.SelectedIndex == 0)
-                    {
-                        searchbox.DataContext = "listBoxPaises";
-                        this.DataContext = listBoxPaises;
-                    }
-                    else
-                    {
-                        searchbox.DataContext = "treeContinents";
-                        this.DataContext = treeContinents;
-                    }
+            //if (e.Source is TabControl)
+            //{
+            //    if (tabContryContinent.IsLoaded)
+            //    {
+            //        if (tabContryContinent.SelectedIndex == 0)
+            //        {
+            //            searchbox.DataContext = "listBoxPaises";
+            //            this.DataContext = listBoxPaises;
+            //        }
+            //        else
+            //        {
+            //            searchbox.DataContext = "treeContinents";
+            //            this.DataContext = treeContinents;
+            //        }
 
-                    //searchbox.Clear(); //Nao fazer isto, arranjar alternativa
-                }
+            //        //searchbox.Clear(); //Nao fazer isto, arranjar alternativa
+            //    }
 
-               
 
-                SearchLists(searchbox.Text);
-            }
+
+            //    SearchLists(searchbox.Text);
+            //}
         }
         private void listBoxPaises_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -167,6 +177,15 @@ namespace Countries
             //{
             //    item.IsSelected = true;
             //}
+
+            Country country = (Country)listBoxPaises.SelectedItem;
+
+            if (country != null && country.latlng != null && country.latlng.Count > 0)
+            {
+                Location location = new Location { Latitude = country.latlng[0], Longitude = country.latlng[1] };
+
+                Mapa.Center = location;
+            }
         }
         private void treeContinents_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
@@ -181,7 +200,7 @@ namespace Countries
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            Grid.SetColumn(countryCurrenciesPanel, Grid.GetColumn(countryCurrenciesPanel)==0?2:0);
+            Grid.SetColumn(countryCurrenciesPanel, Grid.GetColumn(countryCurrenciesPanel) == 0 ? 2 : 0);
 
             Grid.SetColumn(worldCurrenciesPanel, Grid.GetColumn(worldCurrenciesPanel) == 2 ? 0 : 2);
         }
