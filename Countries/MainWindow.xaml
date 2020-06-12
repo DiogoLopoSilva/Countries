@@ -9,42 +9,19 @@
         xmlns:svg="clr-namespace:SharpVectors.Converters;assembly=SharpVectors.Converters.Wpf"
         xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1000" WindowStartupLocation="CenterScreen" MinWidth="800" MaxWidth="1000">
+        Title="Countries" Height="600" Width="1000" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Icon="Resources/Countries_Icon.png">
     <Border Padding="10">
-        <Grid>
+        <Grid x:Name="mainGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.9*" MaxWidth="360"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TabControl x:Name="tabContry" SelectionChanged="TabControl_SelectionChanged" Grid.Column="1" Margin="10,0">
-                <TabItem Header="Country">
-                    <StackPanel>
-
-                        <!--<Border BorderThickness="1" BorderBrush="#FF000000" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
-                    <Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>
-                </Border>-->
-                        <svg:SvgViewbox Margin="0,20,0,0" Height="125" Width="250" VerticalAlignment="Top" Source="{Binding Path=SelectedItem.caminhoImage}"/>
-                        <!--<Image x:Name="imageFlag" Source="{Binding Path=SelectedItem.caminhoImage}" Height="125" Width="250" VerticalAlignment="Top"/>-->
-                        <TextBlock x:Name="name" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" />
-
-                        <Grid Grid.Column="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="0,70,0,0">
-                                <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.capital, StringFormat=Capital: {0},TargetNullValue='Capital: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                                <TextBlock x:Name="regiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.region, StringFormat=Region: {0},TargetNullValue='Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                                <TextBlock x:Name="subregiao" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.subregion, StringFormat=Sub-Region: {0},TargetNullValue='Sub-Region: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="0,70,0,0">
-                                <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.population, StringFormat=Population: {0} habitants,TargetNullValue='Population: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                                <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.gini, StringFormat=Gini: {0},TargetNullValue='Gini: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                                <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" Text="{Binding Path=SelectedItem.area, StringFormat=Area: {0},TargetNullValue='Area: Not available'}" TextAlignment="Left" Height="29" Width="228"/>
-                            </StackPanel>
-                        </Grid>
-                        <GroupBox x:Name="groupBoxCurrencies" Margin="10,40,10,0">
-                            <GroupBox.Style>
+            <DockPanel Grid.Column="1">
+                <Button x:Name="btnMaximize" Background="White" DockPanel.Dock="Top" Height="25" Width="36" HorizontalAlignment="Left" Content=">" Margin="10,0,10,10" Visibility="Hidden" Click="btnMaximize_Click" />
+                <TabControl x:Name="tabContry" Grid.Column="1" Margin="10,0">
+                    <TabItem Header="Country" DataContext="{Binding ElementName=listBoxPaises}">
+                        <DockPanel>
+                            <DockPanel.Style>
                                 <Style>
                                     <Style.Triggers>
                                         <DataTrigger 
@@ -54,50 +31,241 @@
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </GroupBox.Style>
-                            <GroupBox.Header>
-                                <TextBlock Text="Currencies" FontSize="20"></TextBlock>
-                            </GroupBox.Header>
-                            <Grid Margin="0,10,0,0">
+                            </DockPanel.Style>
+                            <Border BorderThickness="1" BorderBrush="#FF000000" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0" DockPanel.Dock="Top">
+                                <svg:SvgViewbox Height="auto" Width="auto" Source="{Binding Path=SelectedItem.caminhoImage}" MaxHeight="125" MaxWidth="250"/>
+                            </Border>
+                            <TextBlock x:Name="name" FontSize="24" HorizontalAlignment="Center" TextWrapping="Wrap" Text="{Binding Path=SelectedItem.name}" TextAlignment="Center" Width="Auto" DockPanel.Dock="Top" />
+                            <Grid Grid.Column="1" DockPanel.Dock="Top">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="5*"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="5*"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel x:Name="countryCurrenciesPanel" Grid.Column="0">
-
-                                    <TextBlock Text="Country Currencies" Margin="20,0,0,5" FontSize="16"/>
-                                    <ComboBox x:Name="cbCountryCurrencies" Margin="20,0" ItemsSource="{Binding Path=SelectedItem.currencies, TargetNullValue='No currencies'}" DisplayMemberPath="name" SelectedIndex="0" IsSynchronizedWithCurrentItem="True"/>
-                                    <TextBox x:Name="countryAmount" Margin="20,10,20,0" Padding="2"/>
+                                <StackPanel Grid.Column="0" Margin="0,30,0,0">
+                                    <TextBlock x:Name="capital" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" TextAlignment="Left" Height="29">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{Binding Path= SelectedItem.capital, StringFormat=Capital: {0}}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=SelectedItem.capital.Length, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                                        <Setter Property="Text" Value="Capital: Not available"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock x:Name="region" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" TextAlignment="Left" Height="29">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{Binding Path= SelectedItem.region, StringFormat=Region: {0}}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=SelectedItem.region.Length, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                                        <Setter Property="Text" Value="Region: Not available"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock x:Name="subregion" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" TextAlignment="Left" Height="29">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{Binding Path= SelectedItem.subregion, StringFormat=Subregion: {0}}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=SelectedItem.subregion.Length, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                                        <Setter Property="Text" Value="Subregion: Not available"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
-                                <DockPanel Grid.Column="1">
-                                    <TextBlock Text="To" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                                    <Button VerticalAlignment="Top" Content="&lt;&gt;" Click="Button_Click_1"/>
-                                </DockPanel>
-                                <StackPanel x:Name="worldCurrenciesPanel"  Grid.Column="2">
-
-                                    <TextBlock Text="World Currencies" Margin="20,0,0,5" FontSize="16"/>
-                                    <ComboBox x:Name="cbWorldCurrencies" Margin="20,0" DisplayMemberPath="name" SelectedIndex="0"/>
-                                    <TextBox x:Name="worldAmount" Margin="20,10,20,0" Padding="2"/>
+                                <StackPanel Grid.Column="1" Margin="0,30,0,0">
+                                    <TextBlock x:Name="population" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" TextAlignment="Left" Height="29">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{Binding Path= SelectedItem.population, StringFormat=Population: {0} habitants}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=SelectedItem.population, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                                        <Setter Property="Text" Value="Population: Not available"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock x:Name="gini" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" TextAlignment="Left" Height="29">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{Binding Path= SelectedItem.gini, StringFormat=Gini: {0}}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=SelectedItem.gini, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                                        <Setter Property="Text" Value="Gini: Not available"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock x:Name="area" HorizontalAlignment="Left" TextWrapping="Wrap" Margin="20,0" TextAlignment="Left" Height="29">
+                                        <TextBlock.Style>
+                                            <Style TargetType="{x:Type TextBlock}">
+                                                <Setter Property="Text" Value="{Binding Path= SelectedItem.area, StringFormat=Area: {0} km²}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=SelectedItem.area, FallbackValue=0, TargetNullValue=0}" Value="0">
+                                                        <Setter Property="Text" Value="Area: Not available"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                             </Grid>
-                        </GroupBox>
-                    </StackPanel>
-                </TabItem>
-                <TabItem x:Name="TabMap" Header="Map">
-                    <m:Map x:Name="Mapa" CredentialsProvider="ESJy2HQqraj3EpYEuuSU~VP1FapcESWV_tsliR6VpdQ~AsSwQMy4RPAyJCMgNlKhaO9KEYv4QE7N_lQj4wTspWr5w3wsoyGFLf8S6zlLuNwc"  ZoomLevel="7"/>
-                </TabItem>
-            </TabControl>
-            <DockPanel VerticalAlignment="Stretch" Grid.Column="0" LastChildFill="True">
+                            <GroupBox x:Name="groupBoxCurrencies" Margin="10,0,10,0" DockPanel.Dock="Bottom" MaxHeight="140">
+                                <GroupBox.Header>
+                                    <TextBlock Text="Currencies" FontSize="20"></TextBlock>
+                                </GroupBox.Header>
+                                <Grid Margin="0,10,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="5*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="5*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel x:Name="countryCurrenciesPanel" Grid.Column="0">
+                                        <TextBlock Text="Country Currencies" Margin="20,0,0,5" FontSize="16"/>
+                                        <ComboBox x:Name="cbCountryCurrencies" Margin="20,0" ItemsSource="{Binding Path=SelectedItem.currencies, TargetNullValue='No currencies'}" DisplayMemberPath="name" SelectedIndex="0" IsSynchronizedWithCurrentItem="True" SelectionChanged="cbCountryCurrencies_SelectionChanged"/>
+                                        <TextBox x:Name="countryAmount" Margin="20,10,20,0" Padding="2" TextChanged="countryAmount_TextChanged"/>
+                                    </StackPanel>
+                                    <DockPanel Grid.Column="1">
+                                        <TextBlock Text="To" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,5,0,5"/>
+                                        <Button VerticalAlignment="Top" Background="White" Content="&lt; &gt;" Click="Button_Click_1"/>
+                                    </DockPanel>
+                                    <StackPanel x:Name="worldCurrenciesPanel"  Grid.Column="2">
+                                        <TextBlock Text="World Currencies" Margin="20,0,0,5" FontSize="16"/>
+                                        <ComboBox x:Name="cbWorldCurrencies" Margin="20,0" DisplayMemberPath="name" SelectedIndex="0" SelectionChanged="cbWorldCurrencies_SelectionChanged"/>
+                                        <TextBox x:Name="worldAmount" Margin="20,10,20,0" Padding="2" TextChanged="worldAmount_TextChanged"/>
+                                    </StackPanel>
+                                </Grid>
+                            </GroupBox>
+                        </DockPanel>
+                    </TabItem>
+                    <TabItem x:Name="TabCovid" Header="Covid Data">
+                        <StackPanel>
+                            <TextBlock x:Name="CovidDate" Text="{Binding CovidDataList.Date, ElementName=WindowCountry, StringFormat='Data from: {0}'}" Margin="0,40,0,0" FontSize="20" HorizontalAlignment="Center"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <GroupBox x:Name="GlobalData" Grid.Column="0" HorizontalAlignment="Center" Margin="0,60" Width="200">
+                                    <GroupBox.Header>
+                                        <TextBlock Text="Global Data" FontSize="20"/>
+                                    </GroupBox.Header>
+                                    <StackPanel>
+                                        <TextBlock x:Name="GlobalNewlyConfirmed" Text="{Binding CovidDataList.Global.NewConfirmed, ElementName=WindowCountry, StringFormat='New Confirmed: {0}'}" Margin="10,20,0,0" Height="29"/>
+                                        <TextBlock x:Name="GlobalTotalConfirmed" Text="{Binding CovidDataList.Global.TotalConfirmed, ElementName=WindowCountry, StringFormat='Total Confirmed: {0}'}" Margin="10,10,0,0" Height="29"/>
+                                        <TextBlock x:Name="GlobalNewDeaths" Text="{Binding CovidDataList.Global.NewDeaths, ElementName=WindowCountry, StringFormat='New Deaths: {0}'}" Margin="10,10,0,0" Height="29"/>
+                                        <TextBlock x:Name="GlobalTotalDeaths" Text="{Binding CovidDataList.Global.TotalDeaths, ElementName=WindowCountry, StringFormat='Total Deaths: {0}'}" Margin="10,10,0,0" Height="29"/>
+                                        <TextBlock x:Name="GlobalNewRecovered" Text="{Binding CovidDataList.Global.NewRecovered, ElementName=WindowCountry, StringFormat='New Recovered: {0}'}" Margin="10,10,0,0" Height="29"/>
+                                        <TextBlock x:Name="GlobalTotalRecovered" Text="{Binding CovidDataList.Global.TotalRecovered, ElementName=WindowCountry, StringFormat='Total Recovered: {0}'}" Margin="10,10,0,0" Height="29"/>
+                                    </StackPanel>
+                                </GroupBox>
+                                <GroupBox x:Name="CountryData" Grid.Column="1" HorizontalAlignment="Center" Margin="0,60" Width="200" DataContext="{Binding ElementName=listBoxPaises}">
+                                    <GroupBox.Header>
+                                        <TextBlock Text="Country Data" FontSize="20"/>
+                                    </GroupBox.Header>
+                                    <StackPanel>
+                                        <TextBlock x:Name="CountrylNewlyConfirmed" HorizontalAlignment="Left" Margin="10,20,0,0" TextAlignment="Left" Height="29">
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="Text" Value="{Binding SelectedItem.CountryCovidData.NewConfirmed, StringFormat='New Confirmed: {0}'}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem.CountryCovidData}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="New Confirmed: Not available"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock x:Name="CountryTotalConfirmed" HorizontalAlignment="Left" Margin="10,10,0,0" TextAlignment="Left" Height="29">
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="Text" Value="{Binding SelectedItem.CountryCovidData.TotalConfirmed, StringFormat='Total Confirmed: {0}'}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem.CountryCovidData}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="Total Confirmed: Not available"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock x:Name="CountryNewDeaths" HorizontalAlignment="Left" Margin="10,10,0,0" TextAlignment="Left" Height="29">
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="Text" Value="{Binding SelectedItem.CountryCovidData.NewDeaths, StringFormat='New Deaths: {0}'}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem.CountryCovidData}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="New Deaths: Not available"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock x:Name="CountryTotalDeaths" HorizontalAlignment="Left" Margin="10,10,0,0" TextAlignment="Left" Height="29">
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="Text" Value="{Binding SelectedItem.CountryCovidData.TotalDeaths, StringFormat='Total Deaths: {0}'}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem.CountryCovidData}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="Total Deaths: Not available"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock x:Name="CountryNewRecovered" HorizontalAlignment="Left" Margin="10,10,0,0" TextAlignment="Left" Height="29">
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="Text" Value="{Binding SelectedItem.CountryCovidData.NewRecovered, StringFormat='New Recovered: {0}'}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem.CountryCovidData}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="New Recovered: Not available"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <TextBlock x:Name="CountryTotalRecovered" HorizontalAlignment="Left" Margin="10,10,0,0" TextAlignment="Left" Height="29">
+                                            <TextBlock.Style>
+                                                <Style TargetType="{x:Type TextBlock}">
+                                                    <Setter Property="Text" Value="{Binding SelectedItem.CountryCovidData.TotalRecovered, StringFormat='Total Recovered: {0}'}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectedItem.CountryCovidData}" Value="{x:Null}">
+                                                            <Setter Property="Text" Value="Total Recovered: Not available"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </GroupBox>
+                            </Grid>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem x:Name="TabMap" Header="Map">
+                        <m:Map x:Name="Mapa" CredentialsProvider="ESJy2HQqraj3EpYEuuSU~VP1FapcESWV_tsliR6VpdQ~AsSwQMy4RPAyJCMgNlKhaO9KEYv4QE7N_lQj4wTspWr5w3wsoyGFLf8S6zlLuNwc"  ZoomLevel="6.5"/>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+            <DockPanel VerticalAlignment="Stretch" Grid.Column="0" LastChildFill="True" Margin="10,0,0,0">
                 <Grid DockPanel.Dock="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="searchbox" HorizontalAlignment="Left" Height="23" Margin="0,0,0,10" TextWrapping="Wrap" Width="120" TextChanged="searchbox_TextChanged" Grid.Column="0"/>
-                    <Button x:Name="btnList" Content="&lt;" HorizontalAlignment="Left" Margin="0,0,0,10"   Width="36" Click="Button_Click" Grid.Column="1"/>
+                    <StackPanel>
+                        <Button x:Name="btnMinimize" Background="White" Content="&lt;" HorizontalAlignment="Left" Margin="0,0,0,10" Height="25" Width="36" Click="btnMinimize_Click" Grid.Column="1"/>
+                        <TextBox x:Name="searchbox" HorizontalAlignment="Left" Height="23" Margin="0,0,0,10" TextWrapping="Wrap" Width="120" TextChanged="searchbox_TextChanged" Grid.Column="0"/>
+                    </StackPanel>
                 </Grid>
-                <TabControl x:Name="tabContryContinent" SelectionChanged="TabControl_SelectionChanged">
+                <TabControl x:Name="tabContryContinent" SelectionChanged="tabContryContinent_SelectionChanged">
                     <TabItem Header="Countries">
                         <Grid Background="#FFE5E5E5">
                             <ListBox x:Name ="listBoxPaises" SelectionChanged="listBoxPaises_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -124,6 +292,10 @@
                                     </Style>
                                 </TreeView.ItemContainerStyle>
                                 <TreeView.Resources>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                      Color="Transparent" />
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                      Color="Black" />
                                     <HierarchicalDataTemplate DataType="{x:Type self:Continent}" ItemsSource="{Binding CountriesList}">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Name}" />

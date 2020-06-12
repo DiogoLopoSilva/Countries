@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Countries.Modelos
 {
@@ -34,5 +30,6 @@ namespace Countries.Modelos
         public string cioc { get; set; }
         public string caminhoImage { get; set; }
         public string caminhoThumbnail { get; set; }
+        public CountryData CountryCovidData { get; set; } = new CountryData();
     }
 }

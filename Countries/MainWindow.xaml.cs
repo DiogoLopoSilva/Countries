@@ -6,53 +6,65 @@ namespace Countries
 {
     using Microsoft.Maps.MapControl.WPF;
     using Modelos;
-    using Servicos;
-    using Svg;
-    using System;
-    using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Windows.Input;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly List<Country> Paises;
-        //public ObservableCollection<Rate> Rates { get; set; }
-        public List<Rate> Rates { get; set; }
-        private readonly ApiService apiService;
-        private readonly NetworkService networkService;
-        private readonly List<Continent> Continents;
-        //private readonly DataService dataService;
+        private readonly List<Country> Countries;
+        private readonly List<Rate> Rates;
+        public CovidData CovidDataList { get; }
 
-        public MainWindow(List<Country> paises, List<Rate> rates, bool connection)
+        public MainWindow(LoadWindow loadWindow)
         {
-            InitializeComponent();
-            apiService = new ApiService();
-            networkService = new NetworkService();
-            //dataService = new DataService();
-            Paises = paises;
-            //Rates = new ObservableCollection<Rate>(rates);
-            Rates = rates;
+            Countries = loadWindow.Countries;
+            Rates = loadWindow.Rates;
+            CovidDataList = loadWindow._CovidData;
+            GetCovidByCountry(Countries);
 
-            if (!connection)
+            InitializeComponent();
+
+            var connection = loadWindow.networkService.CheckConnection();
+
+            if (!connection.IsSuccess)
             {
                 TabMap.Visibility = Visibility.Hidden;
+                TabCovid.Visibility = Visibility.Hidden;
             }
 
-            listBoxPaises.ItemsSource = Paises;
-            treeContinents.ItemsSource = GetContinents(Paises);
+            listBoxPaises.ItemsSource = Countries;
+            treeContinents.ItemsSource = GetContinents(Countries);
             cbWorldCurrencies.ItemsSource = Rates;
 
-            this.DataContext = listBoxPaises;
+            string CountryCode = loadWindow.LocalCountry;
 
-            listBoxPaises.SelectedIndex = 0;
+            if (!string.IsNullOrEmpty(CountryCode))
+            {
+                Country selectedCountry = Countries.Find(c => c.alpha2Code == CountryCode);
+
+                if (selectedCountry != null)
+                {
+                    listBoxPaises.SelectedItem = selectedCountry;
+                }
+                else
+                {
+                    listBoxPaises.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                listBoxPaises.SelectedIndex = 0;
+            }
         }
 
         private List<Continent> GetContinents(List<Country> Paises)
         {
             List<Continent> Continents = new List<Continent>();
             Continent continent;
+
             foreach (var pais in Paises)
             {
                 if (Continents.Find(x => x.Name == pais.region) == null)
@@ -88,37 +100,41 @@ namespace Countries
             return Continents;
         }
 
-        private void searchbox_TextChanged(object sender, TextChangedEventArgs e)
+        private string ConvertedValue(decimal valor, bool conversionType)
         {
-            SearchLists(searchbox.Text);
+            Currency findRate = (Currency)cbCountryCurrencies.SelectedItem;
+
+            if (findRate == null)
+            {
+                return null;
+            }
+
+            if (Rates == null)
+            {
+                return null;
+            }
+
+            Rate rate1 = Rates.Find(r => r.code == findRate.code);
+
+            Rate rate2 = (Rate)cbWorldCurrencies.SelectedItem;
+
+            if (rate1 != null)
+            {
+                var valorConvertido = conversionType == true ? valor / (decimal)rate1.taxRate * (decimal)rate2.taxRate : valor / (decimal)rate2.taxRate * (decimal)rate1.taxRate;
+
+                return valorConvertido.ToString("N4");
+            }
+            else
+            {
+                return "Conversion not available!";
+            }
         }
 
         private void SearchLists(string text)
         {
-            //if (searchbox.DataContext.ToString() == "listBoxPaises")
-            //{
-            //    if (Paises != null)
-            //    {
-            //        IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
-
-            //        listBoxPaises.ItemsSource = lista;
-            //    }
-            //}
-            //else
-            //{
-            //    if (Paises != null)
-            //    {
-            //        IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
-
-            //        treeContinents.ItemsSource = GetContinents(lista.ToList());
-            //    }
-            //}
-
-            if (Paises != null)
+            if (Countries != null)
             {
-                //listBoxPaises.SelectedIndex = -1;
-
-                IEnumerable<Country> lista = Paises.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
+                IEnumerable<Country> lista = Countries.FindAll(x => x.name.ToLower().Contains(text.ToLower()));
 
                 listBoxPaises.ItemsSource = lista;
 
@@ -128,56 +144,36 @@ namespace Countries
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void GetCovidByCountry(List<Country> countries)
         {
-            //tabContryContinent.Width = tabContryContinent.Width == 300 ? 50 : 300;
-            //tabContryContinent.HorizontalAlignment = HorizontalAlignment.Left;
-            //btnList.Content = btnList.Content.ToString() == "<" ? ">" : "<";
-
-            //listBoxPaises.Width = listBoxPaises.Width == 300 ? 50 : 300;
-            //btnList.Content = btnList.Content.ToString() == "<" ? ">" : "<";
+            foreach (Country country in countries)
+            {
+                if (CovidDataList != null)
+                {
+                    country.CountryCovidData = CovidDataList.Countries.FirstOrDefault(c => c.CountryCode == country.alpha2Code);
+                }
+            }
         }
 
-        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void searchbox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            //if (e.Source is TabControl)
-            //{
-            //    if (tabContryContinent.IsLoaded)
-            //    {
-            //        if (tabContryContinent.SelectedIndex == 0)
-            //        {
-            //            searchbox.DataContext = "listBoxPaises";
-            //            this.DataContext = listBoxPaises;
-            //        }
-            //        else
-            //        {
-            //            searchbox.DataContext = "treeContinents";
-            //            this.DataContext = treeContinents;
-            //        }
-
-            //        //searchbox.Clear(); //Nao fazer isto, arranjar alternativa
-            //    }
-
-
-
-            //    SearchLists(searchbox.Text);
-            //}
+            SearchLists(searchbox.Text);
         }
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            mainGrid.ColumnDefinitions[0].Width = new GridLength(0, GridUnitType.Star);
+            btnMaximize.Visibility = Visibility.Visible;
+        }
+
+        private void btnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            mainGrid.ColumnDefinitions[0].Width = new GridLength(0.9, GridUnitType.Star);
+            btnMaximize.Visibility = Visibility.Hidden;
+        }
+
         private void listBoxPaises_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            //this.DataContext = listBoxPaises;
-
-            //groupBoxCurrencies.Visibility = groupBoxCurrencies.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
-
-            //Country pais = Paises.Find(x => x.name == ((Country)listBoxPaises.SelectedItem).name);
-
-            //var item = treeContinents.ItemContainerGenerator.ContainerFromItem(treeContinents.SelectedItem) as TreeViewItem;
-
-            //if (item!=null)
-            //{
-            //    item.IsSelected = true;
-            //}
-
             Country country = (Country)listBoxPaises.SelectedItem;
 
             if (country != null && country.latlng != null && country.latlng.Count > 0)
@@ -186,16 +182,25 @@ namespace Countries
 
                 Mapa.Center = location;
             }
+
+            countryAmount.Clear();
+            worldAmount.Clear();
         }
+
         private void treeContinents_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            //this.DataContext = treeContinents;
-
-            //groupBoxCurrencies.Visibility = groupBoxCurrencies.Visibility == Visibility.Hidden ? Visibility.Visible : Visibility.Hidden;
-
-            //Country country = (Country)treeContinents.SelectedItem;
-
             listBoxPaises.SelectedItem = treeContinents.SelectedItem;
+        }
+
+        private void tabContryContinent_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is TabControl)
+            {
+                if (tabContryContinent.SelectedIndex == 1)
+                {
+                    Keyboard.ClearFocus();
+                }
+            }
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -203,6 +208,87 @@ namespace Countries
             Grid.SetColumn(countryCurrenciesPanel, Grid.GetColumn(countryCurrenciesPanel) == 0 ? 2 : 0);
 
             Grid.SetColumn(worldCurrenciesPanel, Grid.GetColumn(worldCurrenciesPanel) == 2 ? 0 : 2);
+        }
+
+        private void countryAmount_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (countryAmount.IsFocused)
+            {
+                if (string.IsNullOrEmpty(countryAmount.Text))
+                {
+                    worldAmount.Clear();
+                    return;
+                }
+
+                if (!decimal.TryParse(countryAmount.Text, out decimal valor))
+                {
+                    worldAmount.Text = "Please insert a valid value";
+                    return;
+                }
+
+                worldAmount.Text = ConvertedValue(valor, true);
+            }
+        }
+
+        private void worldAmount_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (worldAmount.IsFocused)
+            {
+                if (string.IsNullOrEmpty(worldAmount.Text))
+                {
+                    countryAmount.Clear();
+                    return;
+                }
+
+                if (!decimal.TryParse(worldAmount.Text, out decimal valor))
+                {
+                    countryAmount.Text = "Please insert a valid value";
+                    return;
+                }
+
+                countryAmount.Text = ConvertedValue(valor, false);
+            }
+        }
+
+        private void cbCountryCurrencies_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded)
+            {
+
+                if (string.IsNullOrEmpty(worldAmount.Text))
+                {
+                    countryAmount.Clear();
+                    return;
+                }
+
+                if (!decimal.TryParse(worldAmount.Text, out decimal valor))
+                {
+                    countryAmount.Text = "Please insert a valid value";
+                    return;
+                }
+
+                countryAmount.Text = ConvertedValue(valor, false);
+            }
+        }
+
+        private void cbWorldCurrencies_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (IsLoaded)
+            {
+                if (string.IsNullOrEmpty(countryAmount.Text))
+                {
+                    worldAmount.Clear();
+                    return;
+                }
+
+                if (!decimal.TryParse(countryAmount.Text, out decimal valor))
+                {
+                    worldAmount.Text = "Please insert a valid value";
+                    return;
+                }
+
+                worldAmount.Text = ConvertedValue(valor, true);
+            }
         }
     }
 }

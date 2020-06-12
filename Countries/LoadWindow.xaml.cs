@@ -7,130 +7,129 @@ namespace Countries
 {
     using Modelos;
     using Servicos;
-    using Svg;
-    using System.IO;
-    using System.Net;
+
     /// <summary>
     /// Interaction logic for LoadWindow.xaml
     /// </summary>
     public partial class LoadWindow : Window
     {
-        private List<Country> Paises;
-        private List<Rate> Rates;
+        public List<Country> Countries { get; set; }
+        public List<Rate> Rates { get; set; }
+        public CovidData _CovidData { get; set; }
+        public string LocalCountry { get; set; }
+        public NetworkService networkService { get; }
+
         private readonly ApiService apiService;
-        private readonly NetworkService networkService;
-        private readonly DirectoryInfo Location;
-        private readonly DataService dataService;
+        private DataService dataService;
+        private readonly ProgressReport report;
 
         public LoadWindow()
         {
             InitializeComponent();
+
             apiService = new ApiService();
             networkService = new NetworkService();
-            Location = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent;
+
             dataService = new DataService();
+            report = new ProgressReport();
+
             Load();
         }
 
         private async void Load()
         {
+            progressbar.Visibility = Visibility.Visible;
+            btnRetry.Visibility = Visibility.Hidden;
+
             bool load;
 
             var connection = networkService.CheckConnection();
 
-            bool test = true;
+            Progress<ProgressReport> progress = new Progress<ProgressReport>();
+            progress.ProgressChanged += ReportProgress;
 
-            //if(!test)
             if (!connection.IsSuccess)
             {
-                LoadLocalData();
+                await Task.Run(() => LoadLocalData(progress));
                 load = false;
             }
             else
             {
-                List<Task> tasks = new List<Task>();             
+                List<Task> tasks = new List<Task>();
 
                 var watch = System.Diagnostics.Stopwatch.StartNew();
 
-                if (!Directory.Exists(Location.FullName + "\\Images\\"))
-                {
-                    Directory.CreateDirectory(Location.FullName + "\\Images\\");
-                }
+                await GetCountryByIp(progress);
+                await LoadCovidData(progress);
+                await LoadApiRates(progress);
+                await LoadApiCountries(progress);
 
-                if (!Directory.Exists(Location.FullName + "\\Images\\Thumbnails\\"))
-                {
-                    Directory.CreateDirectory(Location.FullName + "\\Images\\Thumbnails\\");
-                }
+                progressbar.Maximum = Countries.Count + Rates.Count;
 
-                //tblockStatus.Text = "Loading APIs";
-                //tbTime.Text = "---------Time---------";
-                tasks.Add(LoadApiRates());
-                await LoadApiCountries();
-
-                //tbTime.Text += Environment.NewLine + "Load Time: " + watch.ElapsedMilliseconds.ToString();
-                //var time = watch.ElapsedMilliseconds;
-
-                //tblockStatus.Text = "Updating DB";
                 await Task.Run(() => dataService.DeleteData());
-                tasks.Add(Task.Run(() => dataService.SaveData(Paises)));
+                await Task.Run(() => dataService.SaveData(Countries, Rates, progress));
 
-                //tbTime.Text += Environment.NewLine + "Updating Time: " + watch.ElapsedMilliseconds.ToString();
-                //time = watch.ElapsedMilliseconds;
+                progressbar.Maximum = Countries.Count * 2;
 
-                //tblockStatus.Text = "Fetching Flags";
-                tasks.Add(RunDownloadParallelAsync());
-
-                //tbTime.Text += Environment.NewLine + "Download Time: " + (watch.ElapsedMilliseconds - time).ToString();
-                //time = watch.ElapsedMilliseconds;
+                await dataService.RunDownloadParallelAsync(Countries, progress);
 
                 await Task.WhenAll(tasks);
 
                 load = true;
 
-                //tblockStatus.Text = "Done";
-                tbTime.Text = Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString()+ Environment.NewLine;
-                watch.Stop();               
+                tbTime.Text = Environment.NewLine + "TOTAL: " + watch.ElapsedMilliseconds.ToString() + Environment.NewLine;
+                watch.Stop();
             }
 
-            if (Paises.Count == 0)
+            if (Countries.Count == 0)
             {
-                tbTime.Text += "Não há ligação à Internet" + Environment.NewLine +
-                    "e não foram previamente carregadas as taxas." + Environment.NewLine +
-                    "Tente mais tarde!";
-
-                tblockStatus.Text += "Primeira inicialização deverá ter ligação à Internet";
-
+                tbStatus.Text = "You must have an Internet connection the first time you run this Application";
+                progressbar.Visibility = Visibility.Hidden;
+                btnRetry.Visibility = Visibility.Visible;
                 return;
             }
 
             if (load)
             {
-                tblockStatus.Text = $"Taxas carregadas da internet em {DateTime.Now}";
+                tbStatus.Text = $"Data loaded from the Internet on {DateTime.Now}";
             }
             else
             {
-                tblockStatus.Text = "Taxas carregadas da Base de Dados.";
+                tbStatus.Text = "Data loaded from the Database";
             }
 
-            btnLoad.Visibility = Visibility.Visible;
-
-            //MainWindow mw = new MainWindow(Paises);
-            //mw.Show();
-            //Close();
+            MainWindow mw = new MainWindow(this);
+            mw.Show();
+            Close();
         }
 
-        private void LoadLocalData()
+        private void ReportProgress(object sender, ProgressReport e)
         {
-            Paises = dataService.GetData();
+            progressbar.Value = e.PercentageCompleted;
+            tbStatus.Text = e.Description;
         }
 
-        private async Task LoadApiCountries()
+        private void LoadLocalData(IProgress<ProgressReport> progress)
         {
-            progressbar.Value = 0;
+            Countries = dataService.GetDataCountries();
 
+            Rates = dataService.GetDataRates();
+
+            report.PercentageCompleted = 50;
+            report.Description = "Getting Data from the Database";
+            progress.Report(report);
+
+            dataService.CheckImages(Countries);
+
+            report.PercentageCompleted += 50;
+            progress.Report(report);
+        }
+
+        private async Task LoadApiCountries(IProgress<ProgressReport> progress)
+        {
             var response = await apiService.GetCountries("http://restcountries.eu", "/rest/v2/all");
 
-            Paises = (List<Country>)response.Result;
+            Countries = (List<Country>)response.Result;
 
             Country temp = new Country
             {
@@ -139,142 +138,50 @@ namespace Countries
                 currencies = new List<Currency>()
             };
 
-            Paises.Add(temp);
+            Countries.Add(temp);
+
+            report.PercentageCompleted += 25;
+            report.Description = "Loading APIs";
+            progress.Report(report);
         }
-        private async Task LoadApiRates()
+
+        private async Task LoadCovidData(IProgress<ProgressReport> progress)
+        {
+            var response = await apiService.GetCovidData("https://api.covid19api.com", "/summary");
+
+            _CovidData = (CovidData)response.Result;
+
+            report.PercentageCompleted += 25;
+            report.Description = "Loading APIs";
+            progress.Report(report);
+        }
+
+        private async Task LoadApiRates(IProgress<ProgressReport> progress)
         {
             var response = await apiService.GetRates("https://cambiosrafa.azurewebsites.net", "/api/rates");
 
             Rates = (List<Rate>)response.Result;
+
+            report.PercentageCompleted += 25;
+            report.Description = "Loading APIs";
+            progress.Report(report);
         }
 
-        private async Task RunDownloadParallelAsync()
+        private async Task GetCountryByIp(IProgress<ProgressReport> progress)
         {
-            List<Task> tasks = new List<Task>();
+            var response = await apiService.GetCountryByIp("http://ip-api.com", "/json");
 
-            foreach (Country pais in Paises)
-            {
-                if (!File.Exists($"{Location.FullName}\\Images\\{pais.name}.svg"))
-                {
-                    tasks.Add(Task.Run(() => DownloadSVG(Location, pais)));
-                }
-                else
-                {
-                    pais.caminhoImage = $"{Location.FullName}\\Images\\{pais.name}.svg";
-                }
+            LocalCountry = response.Result.ToString();
 
-                if (!File.Exists($"{Location.FullName}\\Images\\Thumbnails\\{pais.name}.png"))
-                {
-                    tasks.Add(Task.Run(() => DownloadThumbnail(Location, pais)));
-                }
-                else
-                {
-                    pais.caminhoThumbnail = $"{Location.FullName}\\Images\\Thumbnails\\{pais.name}.png";
-                }
-            }
-
-            await Task.WhenAll(tasks);
+            report.PercentageCompleted += 25;
+            report.Description = "Loading APIs";
+            progress.Report(report);
         }
 
-        private void DownloadSVG(DirectoryInfo Location, Country pais)
+        private void btnRetry_Click(object sender, RoutedEventArgs e)
         {
-            string path = Location.FullName + "\\Images\\";
-
-            using (WebClient webClient= new WebClient())
-            {
-                try
-                {
-                    webClient.DownloadFile(new Uri(pais.flag), $"{path}{pais.name}.svg");
-
-                    pais.caminhoImage = path + pais.name + ".svg";
-                }
-                catch
-                {
-                    pais.caminhoImage = Location.FullName + "\\Resources\\notavailable.svg";
-                }
-            }
-        }
-
-        private void DownloadThumbnail(DirectoryInfo Location, Country pais)
-        {
-            string path = Location.FullName + "\\Images\\"+"\\Thumbnails\\";
-
-            using (WebClient webClient = new WebClient())
-            {
-                try
-                {
-                    webClient.DownloadFile(new Uri("https://www.countryflags.io/" + $"{pais.alpha2Code}" + "/shiny/64.png"), $"{path}{pais.name}.png");
-
-                    pais.caminhoThumbnail = path + pais.name + ".png";
-                }
-                catch
-                {
-
-
-                }
-            }
-        }
-
-        private async Task ConvertAsync()
-        {
-            string path = Location.FullName + "\\Images\\";
-
-            foreach (Country pais in Paises)
-            {
-                if (File.Exists($"{Location.FullName}\\Images\\{pais.name}.svg"))
-                {
-                    await Task.Run(() => ConvertSVG(Location, pais));
-                }
-
-                pais.caminhoImage = File.Exists($"{path}{pais.name}.bmp") ? path + pais.name + ".bmp" : Location.FullName + "\\Resources\\notavailable.png";
-                pais.caminhoThumbnail = File.Exists($"{path}\\Thumbnails\\{pais.name}.png") ? path + "\\Thumbnails\\" + pais.name + ".png" : Location.FullName + "\\Resources\\notavailable.png";
-            }
-        }
-
-        private void ConvertSVG(DirectoryInfo Location, Country pais)
-        {
-            //HtmlToImageConverter image;
-
-            string path = Location.FullName + "\\Images\\";
-
-            //var svgDoc = SvgDocument.Open<SvgDocument>($"{path}{pais.name}.svg");
-
-            //image = new HtmlToImageConverter
-            //{
-            //    Height = Convert.ToInt32(svgDoc.Height),
-            //    Width = Convert.ToInt32(svgDoc.Width)
-            //};
-
-            //image.GenerateImageFromFile($"{path}{pais.name}.svg", "bmp", $"{path}{pais.name}.bmp");
-
-            //File.Delete($"{path}{pais.name}.svg");
-            //pais.caminhoImage = File.Exists($"{path}{pais.name}.bmp") ? path + pais.name + ".bmp" : Location.FullName + "\\Resources\\notavailable.png";
-
-            try
-            {
-                var svgDocument = SvgDocument.Open<SvgDocument>($"{path}{pais.name}.svg");
-                svgDocument.ShapeRendering = SvgShapeRendering.Auto;
-                //var bitmap = svgDocument.Draw();
-                var bitmap = svgDocument.Draw(Convert.ToInt32(svgDocument.Width.Value * 0.3), Convert.ToInt32(svgDocument.Height.Value * 0.3)); //tamanho 100px por 100px
-                bitmap.Save($"{path}{pais.name}" + ".bmp");
-                bitmap.Dispose();
-
-                File.Delete($"{path}{pais.name}.svg");
-            }
-            catch
-            {
-
-            }
-
-        }
-
-        private void Load_Click(object sender, RoutedEventArgs e)
-        {
-            var connection = networkService.CheckConnection();
-
-            MainWindow mw = new MainWindow(Paises,Rates,connection.IsSuccess);
-            mw.Show();
-            Close();
+            dataService = new DataService();
+            Load();
         }
     }
 }
