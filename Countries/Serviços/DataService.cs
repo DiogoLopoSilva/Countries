@@ -11,24 +11,24 @@
 
     public class DataService
     {
-        private readonly SQLiteConnection connection;
+        private SQLiteConnection connection;
         private SQLiteCommand command;
-        private readonly DirectoryInfo Location;
+        private string Location;
 
         public DataService()
         {
-            Location = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent;
+            Location = Location = AppDomain.CurrentDomain.BaseDirectory;
 
             try
             {
-                if (!Directory.Exists(Location.FullName + "\\Images\\"))
+                if (!Directory.Exists("Images"))
                 {
-                    Directory.CreateDirectory(Location.FullName + "\\Images\\");
+                    Directory.CreateDirectory("Images");
                 }
 
-                if (!Directory.Exists(Location.FullName + "\\Images\\Thumbnails\\"))
+                if (!Directory.Exists("Images\\Thumbnails"))
                 {
-                    Directory.CreateDirectory(Location.FullName + "\\Images\\Thumbnails\\");
+                    Directory.CreateDirectory("Images\\Thumbnails");
                 }
 
                 if (!Directory.Exists("Data"))
@@ -72,9 +72,9 @@
 
                 command.ExecuteNonQuery();
             }
-            catch
+            catch(Exception e)
             {
-
+                MessageBox.Show(e.Message);
             }
         }
 
@@ -292,25 +292,25 @@
 
         private void DownloadSVG(Country country, IProgress<ProgressReport> progress, ProgressReport report, int count)
         {
-            if (!File.Exists($"{Location.FullName}\\Images\\{country.name}.svg"))
+            if (!File.Exists($"{Location}Images\\{country.name}.svg"))
             {
                 using (WebClient webClient = new WebClient())
                 {
                     try
                     {
-                        webClient.DownloadFile(new Uri(country.flag), $"{Location.FullName}\\Images\\{country.name}.svg");
+                        webClient.DownloadFile(new Uri(country.flag), $"{Location}Images\\{country.name}.svg");
 
-                        country.caminhoImage = $"{Location.FullName}\\Images\\{country.name}.svg";
+                        country.caminhoImage = $"{Location}Images\\{country.name}.svg";
                     }
                     catch
                     {
-                        country.caminhoImage = Location.FullName + "\\Resources\\notavailable.svg";
+                        country.caminhoImage = Location + "Resources\\notavailable.svg";
                     }
                 }
             }
             else
             {
-                country.caminhoImage = $"{Location.FullName}\\Images\\{country.name}.svg";
+                country.caminhoImage = $"{Location}Images\\{country.name}.svg";
             }
 
             report.PercentageCompleted++;
@@ -320,15 +320,15 @@
 
         private void DownloadThumbnail(Country country, IProgress<ProgressReport> progress, ProgressReport report, int count)
         {
-            if (!File.Exists($"{Location.FullName}\\Images\\Thumbnails\\{country.name}.png"))
+            if (!File.Exists($"{Location}Images\\Thumbnails\\{country.name}.png"))
             {
                 using (WebClient webClient = new WebClient())
                 {
                     try
                     {
-                        webClient.DownloadFile(new Uri("https://www.countryflags.io/" + $"{country.alpha2Code}" + "/shiny/64.png"), $"{Location.FullName}\\Images\\Thumbnails\\{country.name}.png");
+                        webClient.DownloadFile(new Uri("https://www.countryflags.io/" + $"{country.alpha2Code}" + "/shiny/64.png"), $"{Location}Images\\Thumbnails\\{country.name}.png");
 
-                        country.caminhoThumbnail = $"{Location.FullName}\\Images\\Thumbnails\\{country.name}.png";
+                        country.caminhoThumbnail = $"{Location}Images\\Thumbnails\\{country.name}.png";
                     }
                     catch
                     {
@@ -337,7 +337,7 @@
             }
             else
             {
-                country.caminhoThumbnail = $"{Location.FullName}\\Images\\Thumbnails\\{country.name}.png";
+                country.caminhoThumbnail = $"{Location}Images\\Thumbnails\\{country.name}.png";
             }
 
             report.PercentageCompleted++;
@@ -351,18 +351,18 @@
             {
                 try
                 {
-                    if (File.Exists($"{Location.FullName}\\Images\\{country.name}.svg"))
+                    if (File.Exists($"{Location}Images\\{country.name}.svg"))
                     {
-                        country.caminhoImage = $"{Location.FullName}\\Images\\{country.name}.svg";
+                        country.caminhoImage = $"{Location}Images\\{country.name}.svg";
                     }
                     else
                     {
-                        country.caminhoImage = Location.FullName + "\\Resources\\notavailable.svg";
+                        country.caminhoImage = Location + "\\Resources\\notavailable.svg";
                     }
 
-                    if (File.Exists($"{Location.FullName}\\Images\\Thumbnails\\{country.name}.png"))
+                    if (File.Exists($"{Location}Images\\Thumbnails\\{country.name}.png"))
                     {
-                        country.caminhoThumbnail = $"{Location.FullName}\\Images\\Thumbnails\\{country.name}.png";
+                        country.caminhoThumbnail = $"{Location}Images\\Thumbnails\\{country.name}.png";
                     }
                 }
                 catch (Exception)
